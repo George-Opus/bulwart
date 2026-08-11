@@ -19,7 +19,7 @@ configMode: env
 
 config:
   ## REQUIRED in env mode. e.g. https://mail.georgeop.us
-  jmapServerUrl: ""
+  jmapServerUrl: "https://mail.georgeop.us"
   appName: "Bulwark"
   ## Log format/level (see environment-reference docs)
   logFormat: "json"
@@ -50,19 +50,20 @@ service:
   targetPort: 3000
 
 ingress:
-  enabled: false
-  className: ""
-  annotations: {}
-    # cert-manager.io/cluster-issuer: letsencrypt
+  enabled: true
+  className: "traefik"
+  annotations: 
+    cert-manager.io/cluster-issuer: letsencrypt
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
     # Authelia forward-auth is usually NOT wanted here: Bulwark handles its own
     # OIDC login against Authelia. Protect only if you use basic-auth mode.
   hosts:
-    - host: webmail.example.com
+    - host: webmail.georgeop.us
       paths:
         - path: /
           pathType: Prefix
-  tls: []
-    # - secretName: bulwark-tls
+  tls: 
+    - secretName: bulwark-tls
     #   hosts:
     #     - webmail.example.com
 
@@ -79,7 +80,7 @@ persistence:
     size: 128Mi
     existingClaim: ""
   adminState:
-    enabled: false
+    enabled: true
     storageClass: ""
     accessModes: [ReadWriteOnce]
     size: 128Mi
