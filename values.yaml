@@ -1,0 +1,133 @@
+replicaCount: 1
+
+image:
+  repository: ghcr.io/bulwarkmail/webmail
+  # Pin a version in production; "latest" only for testing
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+## Configuration mode
+## - "env"    : fully env-driven, immutable config (recommended for GitOps).
+##              Requires config.jmapServerUrl to be set (this hides the setup wizard).
+## - "wizard" : first-launch web setup wizard. Requires persistence.config.enabled=true
+##              so the wizard-written config survives restarts.
+configMode: env
+
+config:
+  ## REQUIRED in env mode. e.g. https://mail.georgeop.us
+  jmapServerUrl: ""
+  appName: "Bulwark"
+  ## Log format/level (see environment-reference docs)
+  logFormat: "json"
+  logLevel: "info"
+  ## Extra environment variables passed verbatim to the container.
+  ## Use for OIDC settings, branding, PWA, subpath mount, etc.
+  ## Example:
+  ##   extraEnv:
+  ##     - name: OAUTH_ISSUER
+  ##       value: https://auth.georgeop.us
+  extraEnv: []
+  ## Reference existing ConfigMaps/Secrets wholesale
+  extraEnvFrom: []
+
+## SESSION_SECRET handling.
+## Option 1 (recommended): create the secret yourself (SealedSecret/ESO/SOPS) and
+##   set sessionSecret.existingSecret to its name (key: session-secret by default).
+## Option 2: set sessionSecret.value and the chart creates the Secret. Avoid
+##   committing this in Git.
+sessionSecret:
+  existingSecret: ""
+  existingSecretKey: "session-secret"
+  value: ""
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 3000
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+    # cert-manager.io/cluster-issuer: letsencrypt
+    # Authelia forward-auth is usually NOT wanted here: Bulwark handles its own
+    # OIDC login against Authelia. Protect only if you use basic-auth mode.
+  hosts:
+    - host: webmail.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+    # - secretName: bulwark-tls
+    #   hosts:
+    #     - webmail.example.com
+
+## Persistence
+## - config      -> /app/data/admin       (wizard-written config; needed in wizard mode
+##                  or if you use the admin dashboard to manage config)
+## - adminState  -> /app/data/admin-state (admin runtime state; recommended always
+##                  if you use the admin dashboard)
+persistence:
+  config:
+    enabled: false
+    storageClass: ""
+    accessModes: [ReadWriteOnce]
+    size: 128Mi
+    existingClaim: ""
+  adminState:
+    enabled: false
+    storageClass: ""
+    accessModes: [ReadWriteOnce]
+    size: 128Mi
+    existingClaim: ""
+
+## Probes. The app serves HTTP on 3000; docs mention a health check endpoint
+## for Docker but the exact HTTP path may vary by version - adjust `path` if
+## /api/health 404s on your release, or switch type to "tcp".
+probes:
+  liveness:
+    enabled: true
+    type: http          # http | tcp
+    path: /api/health
+    initialDelaySeconds: 10
+    periodSeconds: 15
+  readiness:
+    enabled: true
+    type: http
+    path: /api/health
+    initialDelaySeconds: 5
+    periodSeconds: 10
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    memory: 512Mi
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: false
+  capabilities:
+    drop: [ALL]
+
+podAnnotations: {}
+podLabels: {}
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
