@@ -64,8 +64,8 @@ ingress:
           pathType: Prefix
   tls: 
     - secretName: bulwark-tls
-    #   hosts:
-    #     - webmail.example.com
+      hosts:
+        - webmail.georgeop.us
 
 ## Persistence
 ## - config      -> /app/data/admin       (wizard-written config; needed in wizard mode
