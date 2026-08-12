@@ -149,7 +149,11 @@ spec:
             - name: admin-state
               mountPath: /app/data/admin-state
             {{- end }}
+            - name: data
+              mountPath: /app/data
       volumes:
+        - name: data
+          emptyDir: {}
         {{- if and .Values.oauth.enabled .Values.oauth.existingSecret }}
         - name: oauth-secret
           secret:
