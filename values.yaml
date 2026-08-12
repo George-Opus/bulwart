@@ -69,7 +69,7 @@ service:
 ingress:
   enabled: false
   className: ""
-  annotations: {}
+  annotations: 
     cert-manager.io/cluster-issuer: letsencrypt-prod
     traefik.ingress.kubernetes.io/router.entrypoints: websecure
     # Authelia forward-auth is usually NOT wanted here: Bulwark handles its own
