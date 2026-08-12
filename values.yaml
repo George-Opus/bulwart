@@ -43,7 +43,7 @@ oauth:
   clientId: "bulwark"
   ## Secret containing the OAuth client secret; mounted as a file and passed
   ## via OAUTH_CLIENT_SECRET_FILE.
-  existingSecret: ""
+  existingSecret: "bulwark-oidc"
   existingSecretKey: "client-secret"
   ## Hide the username/password form entirely. Enable only after OAuth login
   ## is validated end-to-end, or you lock yourself out of the UI.
