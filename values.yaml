@@ -19,7 +19,7 @@ configMode: env
 
 config:
   ## REQUIRED in env mode. e.g. https://mail.georgeop.us
-  jmapServerUrl: ""
+  jmapServerUrl: "https://mail.georgeop.us"
   appName: "Bulwark"
   ## Log format/level (see environment-reference docs)
   logFormat: "json"
@@ -37,9 +37,9 @@ config:
 ## OAuth 2.0 / OIDC (SSO). Endpoints are auto-discovered from the issuer's
 ## /.well-known/openid-configuration. Bulwark uses PKCE.
 oauth:
-  enabled: false
+  enabled: true
   ## External IdP issuer, e.g. https://auth.georgeop.us
-  issuerUrl: ""
+  issuerUrl: "https://auth.georgeop.us"
   clientId: "bulwark"
   ## Secret containing the OAuth client secret; mounted as a file and passed
   ## via OAUTH_CLIENT_SECRET_FILE.
@@ -70,18 +70,19 @@ ingress:
   enabled: false
   className: ""
   annotations: {}
-    # cert-manager.io/cluster-issuer: letsencrypt
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
     # Authelia forward-auth is usually NOT wanted here: Bulwark handles its own
     # OIDC login against Authelia. Protect only if you use basic-auth mode.
   hosts:
-    - host: webmail.example.com
+    - host: webmail.georgeop.us
       paths:
         - path: /
           pathType: Prefix
-  tls: []
-    # - secretName: bulwark-tls
-    #   hosts:
-    #     - webmail.example.com
+  tls: 
+    - secretName: bulwark-tls
+      hosts:
+        - webmail.georgeop.us
 
 ## Persistence
 ## - config      -> /app/data/admin       (wizard-written config; needed in wizard mode
@@ -96,7 +97,7 @@ persistence:
     size: 128Mi
     existingClaim: ""
   adminState:
-    enabled: false
+    enabled: true
     storageClass: ""
     accessModes: [ReadWriteOnce]
     size: 128Mi
